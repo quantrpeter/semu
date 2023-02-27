@@ -49,3 +49,8 @@ distclean: clean
 	$(Q)rm -rf $(RISCV_TESTS_BIN_DIR)
 
 -include $(deps)
+
+dot:
+	clang -S -emit-llvm semu.c -o - | opt -analyze -dot-callgraph
+	dot -Tpng -ocallgraph.png callgraph.dot
+	

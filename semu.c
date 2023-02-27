@@ -141,8 +141,8 @@ struct ram {
 
 struct ram *ram_new(const uint8_t *code, const size_t code_size)
 {
-    struct ram *ram = calloc(1, sizeof(struct ram));
-    ram->data = calloc(RAM_SIZE, 1);
+    struct ram *ram = (struct ram *)calloc(1, sizeof(struct ram));
+    ram->data = (uint8_t *)calloc(RAM_SIZE, 1);
     memcpy(ram->data, code, code_size);
     return ram;
 }
@@ -363,7 +363,7 @@ static void *uart_thread_func(void *priv)
 
 struct uart *uart_new()
 {
-    struct uart *uart = calloc(1, sizeof(struct uart));
+    struct uart *uart = (struct uart *)calloc(1, sizeof(struct uart));
     uart->data[UART_LSR - UART_BASE] |= UART_LSR_TX;
     pthread_mutex_init(&uart->lock, NULL);
     pthread_cond_init(&uart->cond, NULL);
@@ -436,7 +436,7 @@ struct virtio {
 
 struct virtio *virtio_new(uint8_t *disk)
 {
-    struct virtio *vio = calloc(1, sizeof(struct virtio));
+    struct virtio *vio = (struct virtio *)calloc(1, sizeof(struct virtio));
     vio->disk = disk;
     vio->queue_notify = -1;
     return vio;
@@ -559,7 +559,7 @@ struct bus {
 
 struct bus *bus_new(struct ram *ram, struct virtio *vio)
 {
-    struct bus *bus = calloc(1, sizeof(struct bus));
+    struct bus *bus = (struct bus *)calloc(1, sizeof(struct bus));
     bus->ram = ram, bus->virtio = vio;
     bus->clint = clint_new(), bus->plic = plic_new(), bus->uart = uart_new();
     return bus;
@@ -682,7 +682,7 @@ struct cpu {
 
 struct cpu *cpu_new(uint8_t *code, const size_t code_size, uint8_t *disk)
 {
-    struct cpu *cpu = calloc(1, sizeof(struct cpu));
+    struct cpu *cpu = (struct cpu *)calloc(1, sizeof(struct cpu));
 
     /* Initialize the sp(x2) register. */
     cpu->regs[2] = RAM_BASE + RAM_SIZE;
@@ -1384,7 +1384,7 @@ exception_t cpu_execute(struct cpu *cpu, const uint64_t insn)
                 case USER:
                 case SUPERVISOR:
                 case MACHINE:
-                    return 8 + cpu->mode; /* ECALL_FROM_{U,S,M}MODE */
+                    return (exception_t)(8 + cpu->mode); /* ECALL_FROM_{U,S,M}MODE */
                 }
             } else if (rs2 == 0x1 && funct7 == 0x0) { /* ebreak */
                 return BREAKPOINT;
@@ -1581,7 +1581,7 @@ size_t read_file(FILE *f, uint8_t **r)
     long fsize = ftell(f);
     fseek(f, 0, SEEK_SET);
 
-    uint8_t *content = malloc(fsize + 1);
+    uint8_t *content = (uint8_t *)malloc(fsize + 1);
     if (fread(content, fsize, 1, f) != 1) /* less than fsize bytes */
         fatal("read file content");
 
